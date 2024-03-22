@@ -194,16 +194,12 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
 
     model = load_model(hyp_params, name=hyp_params.name)
 
-    #mulmods是融合之后的模态，truths是标签
-    #读取训练集的融合模态数据和标签
     _, truths_train, mulmods_train = produce_data(model, criterion)
     print('train len:', mulmods_train.shape[0])
    
-    #读取测试集的融合模态数据和标签
     _, _, truths_test,_ , mulmods_test= evaluate(model, criterion, test=True)
     print('test len:', mulmods_test.shape[0])
     
-    #读取验证集的融合模态数据和标签
     _, results, truths_vaild,_ , mulmods_vaild= evaluate(model, criterion, test=False)
     print('vaild len:', mulmods_vaild.shape[0])
 
@@ -211,7 +207,6 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
     print('n_parameters:',n_parameters)
     eval_hus(results, truths_vaild, True)
 
-    #保存融合模态的训练集代码：
     mulmods_train =  mulmods_train.cpu().numpy()
     truths_train = truths_train.cpu().numpy()
     
@@ -220,7 +215,6 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
     np.save('A_Multi_Fusion_Data/labels_train.npy', truths_train)
     print('train_label shape = ' + str(truths_train.shape))
     
-    #保存融合模态的测试集代码：
     mul_tests = torch.cat([mulmods_test, mulmods_vaild], dim=0).cpu().numpy()
     truths_tests = torch.cat([truths_test, truths_vaild], dim=0).cpu().numpy()
     
