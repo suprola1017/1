@@ -58,13 +58,13 @@ class DepthwiseSeparable(nn.Module):
         self.channel = channel
         
         self.dsc = nn.Sequential(
-            # 深度卷积层
+            # deepth conv
             nn.Conv1d(channel, channel, kernel_size=3, padding=1, groups=channel),  # groups 参数设置为通道数，即4
             nn.BatchNorm1d(channel),
             nn.Dropout(0.35),
             nn.ReLU(inplace=True),
             
-            # 逐点卷积层
+            # point conv
             nn.Conv1d(channel, channel, kernel_size=1),
             nn.BatchNorm1d(channel),
             nn.Dropout(0.35),
@@ -113,7 +113,7 @@ class CNXFModel(nn.Module):
         self.trans_m3_all = self.get_network(self_type='m3')
         self.trans_m4_all = self.get_network(self_type='m4') 
         
-        #3. dsc network for sigle signal
+        #3. dsc network for single signal
         self.dsc_1 = DepthwiseSeparable(self.m1_len)
         self.dsc_2 = DepthwiseSeparable(self.m2_len)
         self.dsc_3 = DepthwiseSeparable(self.m3_len)
@@ -168,7 +168,7 @@ class CNXFModel(nn.Module):
         m_3 = m3.transpose(1, 2) #torch.Size([batch_size, 128, 2])   torch.Size([batch_size, 14, 50])
         m_4 = m4.transpose(1, 2) #torch.Size([batch_size, 128, 1])   torch.Size([batch_size, 4, 1])
         
-        #预处理
+        #preprocess
         proj_x_m1_hz = self.proj_m1_hz(m_1) #torch.Size([batch_size, 32, 32])   torch.Size([batch_size, 14, 50])
         proj_x_m2_hz = self.proj_m2_hz(m_2) #torch.Size([batch_size, 32, 2])    torch.Size([batch_size, 14, 16])
         proj_x_m3_hz = self.proj_m3_hz(m_3) #torch.Size([batch_size, 32, 2])    torch.Size([batch_size, 14, 50])
@@ -187,62 +187,14 @@ class CNXFModel(nn.Module):
         mul_mod_msc = self.msc(proj_mul_mod) #torch.Size([batch_size, 37, 32])  torch.Size([batch_size, 117, 14])
         
         
-        #结合每层融合特征，进行全局融合
+        #global fusion
         mul_mod_2_sides = torch.cat((mul_mod_msc, mul_mod_dsc), dim=1) #torch.Size([batch_size, 74, 32])    torch.Size([batch_size, 234, 14])    
         if self.dataset == 'wesad': 
             mul_mod_cnxt_att = self.cnxt(mul_mod_2_sides.reshape(-1, 91, 36).unsqueeze(1))  #torch.Size([batch_size, 32, 32])
         else:
             mul_mod_cnxt_att = self.cnxt(mul_mod_2_sides.unsqueeze(1))  #torch.Size([batch_size, 32, 32])
         
-        #分类器
         last_hs = self.final_conv(mul_mod_cnxt_att).squeeze(1) #torch.Size([batch_size, 32])
         output = self.out_layer(last_hs)
-        
-        # last_hs, _ = self.lstm(mul_mod_cnxt_att) #torch.Size([batch_size, 32, 64])
-        # lstm_out_last = last_hs[:, -1, :] ## Take the output of the last time step #torch.Size([batch_size, 64])
 
-        # # Classification
-        # output = self.fc(lstm_out_last)
-        
-        
-        
-       
-        
-        #分类
-        # output = self.convnext_output(mul_mod_msc.unsqueeze(1)) #torch.Size([batch_size, 1])
-        
-        # proj_x_m1_len = self.proj_m1_len(proj_x_m1_hz.permute(0, 2, 1)) #torch.Size([batch_size, 32, 32])
-        # proj_x_m2_len = self.proj_m2_len(proj_x_m2_hz.permute(0, 2, 1)) #torch.Size([batch_size, 32, 2])
-        # proj_x_m3_len = self.proj_m3_len(proj_x_m3_hz.permute(0, 2, 1)) #torch.Size([batch_size, 32, 2])
-        # proj_x_m4_len = self.proj_m4_len(proj_x_m4_hz.permute(0, 2, 1)) #torch.Size([batch_size, 32, 1])
-
-      
-        # proj_x_m1 = proj_x_m1_hz.unsqueeze(1) #torch.Size([batch_size, 1, 32, 32])
-        # proj_x_m2 = proj_x_m2_hz.unsqueeze(1) #torch.Size([batch_size, 1, 32, 32])
-        # proj_x_m3 = proj_x_m3_hz.unsqueeze(1) #torch.Size([batch_size, 1, 32, 32])
-        # proj_x_m4 = proj_x_m4_hz.unsqueeze(1) #torch.Size([batch_size, 1, 32, 32])
-
-        # #各自进入网络
-        # m1_with_all = self.trans_m1_all(proj_x_m1)  #torch.size([batch_size, 32, 24])
-        # m2_with_all = self.trans_m2_all(proj_x_m2)  #torch.size([batch_size, 32, 24])
-        # m3_with_all = self.trans_m3_all(proj_x_m3)  #torch.size([batch_size, 32, 24])
-        # m4_with_all = self.trans_m4_all(proj_x_m4)  #torch.size([batch_size, 32, 24])
-        
-        # #融合模态
-        # mul_mod = torch.cat((m1_with_all.unsqueeze(1), m2_with_all.unsqueeze(1), m3_with_all.unsqueeze(1), m4_with_all.unsqueeze(1)), dim=1) #torch.Size([batch_size, 4, 32, 24])
-        # mul_mod_final = self.dsc(mul_mod).squeeze(1) #torch.Size([batch_size, 32, 24])
-        
-        
-        # #对融合的模态进行训练
-        # fc = self.final_conv(mul_mod_final).squeeze(1) #torch.Size([batch_size, 24])
-        # output = self.out_layer(fc) #torch.Size([batch_size, 1])
-        
-        # mul_model_process = mul_model.unsqueeze(1) #torch.Size([batch_size, 1, 64, 48])
-        # output = self.out_layer(mul_model_process) #torch.Size([batch_size, 1])
-
-        
-        
-        #husformerd 的 output：tensor([[ 3.0447e-01],[-2.6315e-02],[ 1.8127e-01], [ 4.1449e-01],[ 5.3485e-01],
-        
-        
         return output, mul_mod_cnxt_att
