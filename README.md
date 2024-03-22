@@ -1,2 +1,2 @@
-# 1
-1
+# Readme
+This is the implementation code for our paper titled "A Multimodal-Driven Fusion Data Augmentation Framework for Emotion Recognition". The model comprises three components: the physiological signal encoder, the multimodal data generator, and the multimodal emotion recognizer, each corresponding to a folder in the codebase. Specifically, the model facilitates the fusion, generation, and recognition of multimodal signals, which are represented by Fusion.py, Generate.py, and classify.py respectively in the code.
