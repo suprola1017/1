@@ -1,0 +1,2 @@
+nohup: ignoring input
+Namespace(adv_loss='wgan-gp', attn_path='./attn', batch_size=4, beta1=0.0, beta2=0.9, d_conv_dim=64, d_iters=5, d_lr=0.0004, dataset='cifar', g_conv_dim=64, g_lr=0.0001, g_num=5, image_path='./data', imsize=32, lambda_gp=10, log_path='./logs', log_step=10, lr_decay=0.95, model='sagan', model_save_path='./models', model_save_step=1.0, num_workers=2, parallel=False, pretrained_model=None, sample_path='./samples', sample_step=100, total_step=6810, train=True, use_tensorboard=False, version='sagan_1', z_dim=128)
