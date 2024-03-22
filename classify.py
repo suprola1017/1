@@ -12,11 +12,6 @@ from argparse import ArgumentParser
 from Multimodal_Emotion_Recognizer.ConvNeXt.convNeXt import ConvNeXt, convnext_tiny, convnext_small, convnext_base, convnext_large, convnext_xlarge
 from sklearn.model_selection import train_test_split
 
-
-
-
-
-
 if __name__ == "__main__":
         
         parser = ArgumentParser()
@@ -87,8 +82,8 @@ if __name__ == "__main__":
                 for j in range(32):
                         for k in range(32):
                                 flag_train[i][0][j][k] = np.log(np.abs(train_data[i][0][j][k]))
-        scaled_data = (flag_train - np.min(flag_train)) / (np.max(flag_train) - np.min(flag_train))  # 归一化到0-1范围
-        flag_train = 2 * scaled_data - 1  # 将数据映射到[-1, 1]的范围
+        scaled_data = (flag_train - np.min(flag_train)) / (np.max(flag_train) - np.min(flag_train)) 
+        flag_train = 2 * scaled_data - 1 
         X_train = flag_train
         
         
@@ -103,11 +98,10 @@ if __name__ == "__main__":
                 for j in range(32):
                         for k in range(32):
                                 flag_test[i][0][j][k] = np.log(np.abs(test_data[i][0][j][k]))
-        scaled_data = (flag_test - np.min(flag_test)) / (np.max(flag_test) - np.min(flag_test))  # 归一化到0-1范围
-        flag_test = 2 * scaled_data - 1  # 将数据映射到[-1, 1]的范围
+        scaled_data = (flag_test - np.min(flag_test)) / (np.max(flag_test) - np.min(flag_test))
+        flag_test = 2 * scaled_data - 1 
         X_test = flag_test
         
-        #添加生成数据到原始训练集中
         GAN_Data = np.load('After_Gan_Data\GAN_DATA.npy')
         GAN_Label = np.load('After_Gan_Data\GAN_label.npy')
         
