@@ -157,12 +157,6 @@ class Discriminator(nn.Module):
         label_emb_wd_3 = label_emb.unsqueeze(1).unsqueeze(3)
         label_emb_wd_4 = label_emb.unsqueeze(1).unsqueeze(2)
         x = x + label_emb_wd_3 + label_emb_wd_4
-        
-        # x = x.view(-1,)
-        # label_emb = label_emb.view(-1,)
-        # x = label_emb.unsqueeze(1) + x
-        # x = x.view(16, -1, 32*4, 32*4) #4*4 = batch*size
-        
         out = self.l1(x)
         out = self.l2(out)
         out = self.l3(out)
