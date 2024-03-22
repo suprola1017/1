@@ -176,18 +176,6 @@ class Trainer(object):
                       format(elapsed, step + 1, self.total_step, (step + 1),
                              self.total_step , d_loss_real.item(),
                              self.G.attn1.gamma.mean().item(), self.G.attn2.gamma.mean().item() ))
-
-            # # Sample images
-            # if (step + 1) % self.sample_step == 0:
-            #     fake_images,_,_= self.G(fixed_z, label) ########
-            #     save_image(denorm(fake_images.data),
-            #                os.path.join(self.sample_path, '{}_fake.png'.format(step + 1)))
-
-            # if (step+1) % model_save_step==0:
-            #     torch.save(self.G.state_dict(),
-            #                os.path.join(self.model_save_path, '{}_G.pth'.format(step + 1)))
-            #     torch.save(self.D.state_dict(),
-            #                os.path.join(self.model_save_path, '{}_D.pth'.format(step + 1)))
         
         print("save model parameter!!!")
         torch.save(self.G.state_dict(),
@@ -230,32 +218,13 @@ class Trainer(object):
         self.d_optimizer.zero_grad()
         self.g_optimizer.zero_grad()
 
-    def save_sample(self, label):
-
-        self.G.load_state_dict(torch.load(os.path.join(self.model_save_path, 'G.pth')))
-        self.G.eval()
-        
-        #生成数据
-        z = tensor2var(torch.randn(self.batch_size, self.z_dim))
-        label_tensor = torch.from_numpy(np.full((self.batch_size,), label)).long().cuda()
-
-        label_tensor = torch.cuda.LongTensor(label_tensor) 
-
-        with torch.no_grad():
-            gen_signal, _, _ = self.G(z, label_tensor)
-
-        gen_signal = gen_signal.cpu().numpy()
-        print(gen_signal)
-        print(gen_signal.shape)
-
-
     def generate_signal(self, label, count):
         
         self.G.load_state_dict(torch.load(os.path.join(self.model_save_path, 'G.pth')))
         self.G.eval()      
         
         if label == 0:
-            #生成第一组数据
+            #generate first data
             z = tensor2var(torch.randn(self.batch_size, self.z_dim))
             label_tensor = torch.from_numpy(np.full((self.batch_size,), label)).long().cuda()
             label_tensor = torch.cuda.LongTensor(label_tensor) 
@@ -264,11 +233,11 @@ class Trainer(object):
             gen_signal_first = gen_signal.cpu().numpy()
             label_first = np.zeros(shape=(self.batch_size, 1))
                 
-            # 保存生成的第一组数据
+            # save first data
             np.save('After_Gan_Data/GAN_DATA.npy', gen_signal_first)    
             np.save('After_Gan_Data/GAN_label.npy', label_first)
             
-        #生成其他数据
+        #generate others
         for i in range(count):
             
             z = tensor2var(torch.randn(self.batch_size, self.z_dim))
@@ -278,23 +247,18 @@ class Trainer(object):
                 gen_signal, _, _ = self.G(z, label_tensor)
             gen_signal_for_1 = gen_signal.cpu().numpy()
             
-            # 保存生成数据
             np.save('After_Gan_Data/GAN_DATA_for_1.npy', gen_signal_for_1)
             
-            # 扩展数据 
             gen_signal_now = np.load('After_Gan_Data/GAN_DATA.npy')
             print("before gen signal shape: ", gen_signal_now.shape)
             merged_signal = np.row_stack([gen_signal_now, gen_signal_for_1])
             print("after merge data shape: ", merged_signal.shape)
 
-            # 保存生成数据
             np.save('After_Gan_Data/GAN_DATA.npy', merged_signal)
 
-            # 扩展标签
             labels = np.load('After_Gan_Data/GAN_label.npy')
             print("before merge label shape: ", labels.shape)
             labels = np.row_stack([labels, np.full((self.batch_size, 1), label)])
             print("after merge label shape: ", labels.shape)
 
-            # 保存生成标签
             np.save('After_Gan_Data/GAN_label.npy', labels)
