@@ -51,11 +51,6 @@ parameter.add_argument('--head_init_scale', type=float, default=1.,
 #Other
 parameter.add_argument('--no_cuda', action='store_true',
                     help='do not use cuda')
-"""
-    在这里，action='store_true' 表示如果命令行参数 --no_cuda 存在，就将其设置为 True，否则将其设置为 False。
-    换句话说，如果用户在命令行中输入了 --no_cuda，则程序会将其解释为启用了 no_cuda 标志，这个标志的值为 True。
-    如果用户没有输入 --no_cuda，则 no_cuda 标志将被解释为 False。
-"""
 parameter.add_argument('--name', type=str, default='cnxf',
                     help='name of the trial (default: "cnxf")')
 parameter.add_argument('--eval', action='store_true',
